@@ -1,70 +1,57 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>5分钟 BTC 涨跌直播间</title>
-  <style>
-    body { 
-      font-family: system-ui, -apple-system, sans-serif; 
-      background: #0a0a0a; 
-      color: #ffffff; 
-      margin: 0; 
-      padding: 20px; 
-      line-height: 1.6;
-    }
-    h1 { 
-      text-align: center; 
-      color: #00ff9d; 
-      margin-bottom: 10px; 
-    }
-    .container { 
-      max-width: 1100px; 
-      margin: 0 auto; 
-    }
-    .big-button {
-      display: block;
-      width: 100%;
-      max-width: 520px;
-      margin: 40px auto;
-      padding: 22px;
-      font-size: 26px;
-      font-weight: bold;
-      text-align: center;
-      background: #00ff9d;
-      color: #000;
-      border-radius: 20px;
-      text-decoration: none;
-      box-shadow: 0 10px 30px rgba(0, 255, 157, 0.3);
-    }
-    .notice {
-      text-align: center;
-      color: #aaa;
-      font-size: 15px;
-      margin: 30px 0;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>🚀 5分钟 BTC 涨跌直播间</h1>
-    <p style="text-align:center; color:#00ff9d; font-size:18px;">
-      Polymarket 实时交易 · 推荐码: <strong>mm8899</strong>
-    </p>
+export default function Home() {
+  return (
+    <div className="min-h-screen bg-zinc-950 text-slate-200">
+      {/* 顶部滚动横屏 */}
+      <div className="bg-black border-b border-emerald-500 py-4 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center gap-4 overflow-hidden text-sm" id="ticker">
+            {/* JS 会动态填充 */}
+          </div>
+        </div>
+      </div>
 
-    <a href="https://polymarket.com/" target="_blank" class="big-button">
-      👉 立即进入 Polymarket 玩 5分钟 BTC 涨跌
-    </a>
+      <div className="max-w-7xl mx-auto p-8">
+        <h1 className="text-6xl font-bold text-center mb-2 tracking-tighter">Ω SIGNAL</h1>
+        <p className="text-center text-slate-400 mb-12">交易量暴涨 · 庄家吸筹/砸盘 · 高频合约监控</p>
 
-    <div class="notice">
-      通过这个网站进入 Polymarket，你自动使用我的推荐码 <strong>mm8899</strong><br>
-      每笔交易我都能获得部分手续费奖励，感谢支持 ❤️
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="signals">
+          {/* 动态生成 */}
+        </div>
+      </div>
+
+      <script dangerouslySetInnerHTML={{
+        __html: `
+          async function load() {
+            const res = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=30&page=1&price_change_percentage=1h');
+            const coins = await res.json();
+            
+            // 顶部ticker
+            let t = '';
+            coins.forEach(c => {
+              const ch = c.price_change_percentage_1h_in_currency || 0;
+              t += \`<span class="mx-8">\${c.symbol.toUpperCase()} $${c.current_price.toLocaleString()} <span class="\${ch>=0?'text-emerald-400':'text-red-400'}">\${ch>=0?'▲':'▼'}\${Math.abs(ch.toFixed(1))}% </span></span>\`;
+            });
+            document.getElementById('ticker').innerHTML = t + t;
+
+            // 信号卡片
+            let html = '';
+            coins.forEach(coin => {
+              const ch = coin.price_change_percentage_1h_in_currency || 0;
+              if (Math.abs(ch) < 2.5) return;
+              html += \`
+                <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8">
+                  <div class="text-3xl font-bold">\${coin.symbol.toUpperCase()}</div>
+                  <div class="text-5xl font-mono my-4">$\${coin.current_price.toLocaleString()}</div>
+                  <div class="\${ch>0 ? 'text-emerald-400' : 'text-red-400'} text-2xl">\${ch>0 ? '↑' : '↓'} \${Math.abs(ch.toFixed(1))}%</div>
+                  <div class="mt-6 text-sm">\${ch>0 ? '🟢 疑似庄家吸筹' : '🔴 疑似庄家砸盘'}</div>
+                </div>\`;
+            });
+            document.getElementById('signals').innerHTML = html;
+          }
+          load();
+          setInterval(load, 30000);
+        `
+      }} />
     </div>
-
-    <p style="text-align:center; color:#666; font-size:14px;">
-      进入后直接搜索或找到「Bitcoin Up or Down 5 Min」即可玩<br>
-      建议使用电脑 Chrome 浏览器，效果最佳
-    </p>
-  </div>
-</body>
-</html>
+  );
+}
